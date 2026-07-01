@@ -38,12 +38,12 @@ void guardarListas() {
 
 void agregarVerMasTarde(int idPelicula) {
     listaVerMasTarde.push_back(idPelicula);
-    guardarListas();
+    //ya no guarda inmediatamente, se guarda al salir
 }
 
 void agregarLike(int idPelicula) {
     listaLikes.push_back(idPelicula);
-    guardarListas();
+    //ya no guarda inmediatamente, se guarda al salir
 }
 
 void mostrarVerMasTarde(const vector<Pelicula>& peliculas) {
@@ -53,12 +53,10 @@ void mostrarVerMasTarde(const vector<Pelicula>& peliculas) {
     }
     cout << "=== Ver mas tarde ===\n";
     for (int id : listaVerMasTarde) {
-        if (id >= 0 && id < peliculas.size()) {
+        if (id >= 0 && id < (int)peliculas.size()) {
             cout << "- " << peliculas[id].titulo
-                      << " (" << peliculas[id].releaseYear << ") "
-                      << "[" << peliculas[id].genero << "]\n";
+                 << " (" << peliculas[id].releaseYear << ") "
+                 << "[" << peliculas[id].genero << "]\n";
         }
     }
 }
-
-// [TESTEO: No finalizado aún]// [TESTEO: No finalizado aun]

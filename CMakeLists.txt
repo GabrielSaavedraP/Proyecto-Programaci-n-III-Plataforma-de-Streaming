@@ -8,6 +8,7 @@ add_executable(Proyecto_Progra_3
         cargador_csv.h
         cargador_csv.cpp
         pelicula.h
+        pelicula_builder.h
         preprocesador.h
         preprocesador.cpp
         lista_ver_mas_tarde.h
