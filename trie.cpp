@@ -5,7 +5,7 @@
 using namespace std;
 
 // [TESTEO P3: No finalizado aun]
-vector <Resultado> Trie::buscar(string consulta) {
+vector <Resultado> Trie::buscarPalabra(const string& consulta) {
     string limpio = normalizar(consulta);
     NodoTrie* actual = raiz;
     for (char c : limpio) {
@@ -31,6 +31,23 @@ vector <Resultado> Trie::buscar(string consulta) {
 
     return listaOrdenada;
 }
+
+//Buscar palabra y ffrases
+vector<Resultado> Trie::buscar(string consulta)
+{
+    string limpio = normalizar(consulta);
+    vector<string> palabras = tokenizar(limpio);
+
+    if (palabras.empty())
+        return {};
+
+    if (palabras.size() == 1)
+        return buscarPalabra(palabras[0]);
+
+    return buscarFrase(palabras);
+}
+
+
 
 // [TESTEO P3: No finalizado aun]
 void Trie::recolectarResultados(NodoTrie *nodo, unordered_map<int, int> &resultadosAcumulados) {
@@ -112,4 +129,40 @@ void Trie::construirTrie(const vector<Pelicula>& peliculas) {
         
         if (i % 1000 == 0) cout << "Indexadas " << i << " peliculas" << endl;
     }
+}
+
+
+
+
+//Buscar frase
+vector<Resultado> Trie::buscarFrase(const vector<string>& palabras)
+{
+    unordered_map<int,int> consolidado;
+
+    for(const string& palabra : palabras)
+    {
+        vector<Resultado> resultados = buscarPalabra(palabra);
+
+        for(const auto& r : resultados)
+        {
+            consolidado[r.idPelicula] += r.relevancia;
+        }
+    }
+
+    priority_queue<Resultado> pq;
+
+    for(const auto& [id,frec] : consolidado)
+    {
+        pq.push({id,frec});
+    }
+
+    vector<Resultado> lista;
+
+    while(!pq.empty())
+    {
+        lista.push_back(pq.top());
+        pq.pop();
+    }
+
+    return lista;
 }
