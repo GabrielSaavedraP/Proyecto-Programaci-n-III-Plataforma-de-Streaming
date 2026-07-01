@@ -119,4 +119,4 @@ void Trie::construirTrie(const vector<Pelicula>& peliculas) {
     cout << "   → Tiempo Paralelo   : " << tiempoParalelo << " ms (" 
          << numHilos << " hilos)" << endl;
     cout << "   → Mejora            : " << (double)tiempoSecuencial / tiempoParalelo << "x" << endl;
-}
+}    
