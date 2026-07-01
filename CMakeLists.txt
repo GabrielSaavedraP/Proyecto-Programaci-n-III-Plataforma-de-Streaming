@@ -14,4 +14,5 @@ add_executable(Proyecto_Progra_3
         lista_ver_mas_tarde.h
         lista_ver_mas_tarde.cpp
         trie.h
-        trie.cpp)
+        trie.cpp
+        Resultado.h)

@@ -165,6 +165,5 @@ construirTrie() fue paralelizado usando std::thread, dividiendo el dataset en bl
 
 ## Referencias
 
-- Kaggle. (2023). *Wikipedia Movie Plots*. https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots
 - Sedgewick, R., & Wayne, K. (2011). *Algorithms* (4th ed.). Addison-Wesley.
 - Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.

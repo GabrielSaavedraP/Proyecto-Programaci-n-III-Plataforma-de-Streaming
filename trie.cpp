@@ -1,10 +1,13 @@
 #include "trie.h"
 #include <iostream>
 #include <algorithm>
+#include <chrono>      // Para medicion de tiempos
+#include <thread>      // Para paralelizacion
+#include <mutex>       // Para seguridad en hilos
 
 using namespace std;
 
-// Singleton
+//Singleton
 Trie* Trie::instancia = nullptr;
 std::mutex Trie::mutexInstancia;
 
@@ -24,6 +27,7 @@ Trie& Trie::getInstance() {
     return *instancia;
 }
 
+// Nodotrie
 NodoTrie::NodoTrie() {
     for (int i = 0; i < 36; i++) hijos[i] = nullptr;
     esFin = false;
@@ -35,7 +39,7 @@ NodoTrie::~NodoTrie() {
     }
 }
 
-// Metodos internos (igual que el proyecto anteriro)
+// Metodos internos (igual que el proy 1)
 int Trie::obtenerIndice(char c) {
     if (c >= 'a' && c <= 'z') return c - 'a';
     if (c >= '0' && c <= '9') return c - '0' + 26;
@@ -56,38 +60,81 @@ void Trie::insertar(const string& palabra, int idPelicula) {
     actual->contadorPeliculas[idPelicula]++;
 }
 
-// Funcion auxiliar para insertar pelicula 
-void insertarPelicula(Trie* trie, const Pelicula& p, std::mutex& mutexInsert) {
-    string contenido = p.titulo + " " + p.sinopsis + " " +
-                       p.director + " " + p.genero + " " + p.cast;
+// Busquedas (integrante 1)
+vector<Resultado> Trie::buscarPalabra(const string& consulta) {
+    string limpio = normalizar(consulta);
+    NodoTrie* actual = raiz;
+    for (char c : limpio) {
+        int indice = obtenerIndice(c);
+        if (indice == -1) continue;
+        if (actual->hijos[indice] == nullptr) return {};
+        actual = actual->hijos[indice];
+    }
 
-    string limpio = normalizar(contenido);
+    unordered_map<int, int> consolidado;
+    recolectarResultados(actual, consolidado);
+
+    priority_queue<Resultado> pq;
+    for (auto const& [id, frec] : consolidado) {
+        pq.push({id, frec});
+    }
+
+    vector<Resultado> lista;
+    while (!pq.empty()) {
+        lista.push_back(pq.top());
+        pq.pop();
+    }
+    return lista;
+}
+
+vector<Resultado> Trie::buscar(string consulta) {
+    string limpio = normalizar(consulta);
     vector<string> palabras = tokenizar(limpio);
+    if (palabras.empty()) return {};
+    if (palabras.size() == 1)
+        return buscarPalabra(palabras[0]);
+    return buscarFrase(palabras);
+}
 
-    for (const string& pal : palabras) {
-        if (!pal.empty()) {
-            std::lock_guard<std::mutex> lock(mutexInsert);
-            trie->insertar(pal, p.id);      
+void Trie::recolectarResultados(NodoTrie *nodo, unordered_map<int, int> &resultadosAcumulados) {
+    if (nodo == nullptr) return;
+    for (auto const& [id, frec] : nodo->contadorPeliculas) {
+        resultadosAcumulados[id] += frec;
+    }
+    for (int i = 0; i < 36; i++) {
+        if (nodo->hijos[i] != nullptr) {
+            recolectarResultados(nodo->hijos[i], resultadosAcumulados);
         }
     }
 }
 
-// Construccion pra comparacion 
+vector<Resultado> Trie::buscarFrase(const vector<string>& palabras) {
+    unordered_map<int,int> consolidado;
+    for(const string& palabra : palabras) {
+        vector<Resultado> resultados = buscarPalabra(palabra);
+        for(const auto& r : resultados) {
+            consolidado[r.idPelicula] += r.relevancia;
+        }
+    }
+    priority_queue<Resultado> pq;
+    for(const auto& [id,frec] : consolidado) {
+        pq.push({id,frec});
+    }
+    vector<Resultado> lista;
+    while(!pq.empty()) {
+        lista.push_back(pq.top());
+        pq.pop();
+    }
+    return lista;
+}
+
+// Construccion paralela
 void Trie::construirTrie(const vector<Pelicula>& peliculas) {
     if (peliculas.empty()) return;
 
     cout << "[Trie] Iniciando construcción del índice...\n";
 
-    // Version secuencial
-    auto startSeq = std::chrono::high_resolution_clock::now();
-    Trie trieSecuencial;  // Trie temporal para medición
-    for (const auto& p : peliculas) {
-        insertarPelicula(&trieSecuencial, p, *(new std::mutex())); // mutex dummy
-    }
-    auto endSeq = std::chrono::high_resolution_clock::now();
-    auto tiempoSecuencial = std::chrono::duration_cast<std::chrono::milliseconds>(endSeq - startSeq).count();
-
-    // Version con progra paralela
+    // Versión Paralela 
     auto startPar = std::chrono::high_resolution_clock::now();
 
     const int numHilos = std::thread::hardware_concurrency() > 0 ? 
@@ -103,7 +150,19 @@ void Trie::construirTrie(const vector<Pelicula>& peliculas) {
 
         hilos.emplace_back([this, &peliculas, inicio, fin, &mutexInsert]() {
             for (int j = inicio; j < fin; ++j) {
-                insertarPelicula(this, peliculas[j], mutexInsert);
+                const Pelicula& p = peliculas[j];
+                string contenido = p.titulo + " " + p.sinopsis + " " +
+                                  p.director + " " + p.genero + " " + p.cast;
+                
+                string limpio = normalizar(contenido);
+                vector<string> palabras = tokenizar(limpio);
+
+                for (const string& pal : palabras) {
+                    if (!pal.empty()) {
+                        std::lock_guard<std::mutex> lock(mutexInsert);
+                        insertar(pal, p.id);
+                    }
+                }
             }
         });
     }
@@ -113,10 +172,6 @@ void Trie::construirTrie(const vector<Pelicula>& peliculas) {
     auto endPar = std::chrono::high_resolution_clock::now();
     auto tiempoParalelo = std::chrono::duration_cast<std::chrono::milliseconds>(endPar - startPar).count();
 
-    // Mostrar resultados
-    cout << "[Trie] Construcción finalizada!" << endl;
-    cout << "   → Tiempo Secuencial : " << tiempoSecuencial << " ms" << endl;
-    cout << "   → Tiempo Paralelo   : " << tiempoParalelo << " ms (" 
-         << numHilos << " hilos)" << endl;
-    cout << "   → Mejora            : " << (double)tiempoSecuencial / tiempoParalelo << "x" << endl;
-}    
+    cout << "[Trie] Construido en " << tiempoParalelo 
+         << " ms usando " << numHilos << " hilos." << endl;
+}

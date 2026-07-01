@@ -2,6 +2,11 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
+#include <queue>
+#include "pelicula.h"
+#include "Resultado.h"
+
 
 using namespace std;
 
@@ -26,7 +31,7 @@ unordered_set<string> stopwords = {
     "so","than","too","very","can","will","just","should"
 };
 
-string normalizar(string texto) {
+string normalizar(const string& texto) {
     string r = "";
 
     for (int i = 0; i < texto.size(); i++) {
@@ -44,30 +49,81 @@ string normalizar(string texto) {
     return r;
 }
 
-vector<string> tokenizar(string texto) {
-    vector<string> palabras;
-    string actual = "";
 
-    for (int i = 0; i < texto.size(); i++) {
-        if (texto[i] == ' ') {
 
-            if (actual != "") {
-                if (stopwords.count(actual) == 0) {
-                    palabras.push_back(actual);
-                }
-                actual = "";
+
+unordered_map<string, vector<int>> crearIndice(
+    const vector<Pelicula>& peliculas,
+    const string& campo)
+{
+    unordered_map<string, vector<int>> indice;
+
+    for(int i = 0; i < peliculas.size(); i++)
+    {
+        string texto;
+
+        if(campo == "director")
+            texto = peliculas[i].director;
+
+        else if(campo == "genero")
+            texto = peliculas[i].genero;
+
+        else if(campo == "cast")
+            texto = peliculas[i].cast;
+
+        else
+            continue;
+
+        texto = normalizar(texto);
+
+        vector<string> palabras = tokenizar(texto);
+
+        for(const string& palabra : palabras)
+        {
+            indice[palabra].push_back(i);
+        }
+    }
+
+    return indice;
+}
+
+vector<Resultado> buscarPorTag(
+    const unordered_map<string, vector<int>>& indice,
+    const string& consulta)
+{
+    string limpio = normalizar(consulta);
+    vector<string> palabras = tokenizar(limpio);
+
+    unordered_map<int, int> consolidado;
+
+    // Cuenta cuántas veces aparece cada película
+    for (const string& palabra : palabras)
+    {
+        auto it = indice.find(palabra);
+
+        if (it != indice.end())
+        {
+            for (int id : it->second)
+            {
+                consolidado[id]++;
             }
-
-        } else {
-            actual += texto[i];
         }
     }
 
-    if (actual != "") {
-        if (stopwords.count(actual) == 0) {
-            palabras.push_back(actual);
-        }
+    priority_queue<Resultado> pq;
+
+    for (const auto& [id, frecuencia] : consolidado)
+    {
+        pq.push({id, frecuencia});
     }
 
-    return palabras;
+    vector<Resultado> resultados;
+
+    while (!pq.empty())
+    {
+        resultados.push_back(pq.top());
+        pq.pop();
+    }
+
+    return resultados;
 }

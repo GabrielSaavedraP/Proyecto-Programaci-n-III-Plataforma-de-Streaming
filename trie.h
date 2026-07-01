@@ -9,6 +9,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+
 #include "resultado.h"
 #include "pelicula.h"
 #include "preprocesador.h"
@@ -49,4 +50,4 @@ public:
     NodoTrie* getRaiz() { return raiz; }
 };
 
-#endif  
+#endif
