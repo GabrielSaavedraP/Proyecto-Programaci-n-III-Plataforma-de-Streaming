@@ -128,21 +128,43 @@ RETORNAR resultados mapa
 
 ---
 
-## Notas sobre el código de prueba
+## Patrones de Diseño
 
-Durante el desarrollo de esta primera entrega, como equipo, decidimos implementar en C++ algunas funciones que originalmente solo requerían pseudocódigo. Esto fue necesario por dos razones:
+### Singleton (Trie)
+Se garantiza que solo existe una instancia del Trie en todo el programa. Construir el Trie es costoso porque recorre más de 34,000 películas, por lo que no tiene sentido permitir múltiples instancias.
 
-**Para validar los pseudocódigos de P2 y P3:** Antes de documentar los algoritmos de inserción y búsqueda, implementamos el código real para verificar que la lógica funcionara correctamente con datos reales del dataset. Una vez validado, extrajimos esa lógica para escribir los pseudocódigos del README. Estas funciones están marcadas con `[TESTEO P2]` y `[TESTEO P3]` en el código.
+### Strategy (Ranking)
+Permite intercambiar el criterio de ordenamiento de resultados (por frecuencia o por similitud) sin modificar el código que llama a buscar().
 
-**Para que P4 pudiera construir un prototipo funcional:** En lugar de hardcodear películas inventadas, P4 conectó la interfaz directamente al CSV real para poder validar que el preprocesamiento y la inserción producían resultados correctos. Esto está marcado con `[TESTEO P4]` en el código.
+### Observer (Likes)
+Al agregar un Like, se notifica automáticamente a las partes del programa interesadas en ese evento, como la lista de similares, sin llamarlas manualmente desde el mismo lugar.
 
-Todo el código marcado como testeo es un prototipo. Para la entrega 2 será corregido o mejorado.
+### Builder (Pelicula)
+Separa la construcción del objeto Pelicula en pasos reutilizables, reemplazando la asignación manual campo por campo que existía en cargador_csv.cpp.
 
 ---
 
-## Limitaciones actuales y trabajo pendiente para entrega 2
+## Programación Paralela
 
-- La búsqueda por frase (ejemplo: "barco fantasma") aún no está implementada
-- El algoritmo de similitud por Likes está pendiente
-- La búsqueda por tag específico (solo director, solo género) está pendiente
-- La interfaz actual es un prototipo de prueba, será reemplazada por la versión final
+construirTrie() fue paralelizado usando std::thread, dividiendo el dataset en bloques para que varios hilos inserten simultáneamente.
+
+### Tabla comparativa de tiempos
+
+| Modo | Tiempo de construcción |
+|------|----------------------|
+| Secuencial | (pendiente datos de P2) |
+| Paralelo | (pendiente datos de P2) |
+
+---
+
+## Programación Genérica
+
+(pendiente implementación de P1)
+
+---
+
+## Referencias
+
+- Kaggle. (2023). *Wikipedia Movie Plots*. https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots
+- Sedgewick, R., & Wayne, K. (2011). *Algorithms* (4th ed.). Addison-Wesley.
+- Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
