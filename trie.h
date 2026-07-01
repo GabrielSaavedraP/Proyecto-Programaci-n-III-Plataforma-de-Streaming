@@ -10,7 +10,8 @@
 #include <thread>
 #include <chrono>
 
-#include "resultado.h"
+#include "estrategias.h"
+#include "Resultado.h"
 #include "pelicula.h"
 #include "preprocesador.h"
 
@@ -30,6 +31,7 @@ private:
     static std::mutex mutexInstancia;
     
     NodoTrie* raiz;
+    EstrategiaRanking* estrategiaActual;
     
     Trie();                    
     int obtenerIndice(char c);
@@ -41,10 +43,12 @@ public:
     static Trie& getInstance();
     
     void construirTrie(const vector<Pelicula>& peliculas);
+
+    void setEstrategia(EstrategiaRanking* nuevaEstrategia);
     
-    vector<Resultado> buscar(string consulta);
-    vector<Resultado> buscarPalabra(const string& consulta);
-    vector<Resultado> buscarFrase(const vector<string>& palabras);
+    vector<Resultado> buscar(string consulta, const vector<Pelicula>& baseDatos, const vector<int>& listaLikes);
+    vector<Resultado> buscarPalabra(const string& consulta, const vector<Pelicula>& baseDatos, const vector<int>& listaLikes);
+    vector<Resultado> buscarFrase(const vector<string>& palabras, const vector<Pelicula>& baseDatos, const vector<int>& listaLikes);
     vector<Resultado> obtenerPagina(const vector<Resultado>& todosLosResultados, int pagina, int tamanoPagina = 5);
     
     NodoTrie* getRaiz() { return raiz; }

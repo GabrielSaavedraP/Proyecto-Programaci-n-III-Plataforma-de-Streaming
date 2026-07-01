@@ -13,10 +13,12 @@ std::mutex Trie::mutexInstancia;
 
 Trie::Trie() {
     raiz = new NodoTrie();
+    estrategiaActual = new RankingPorFrecuencia();
 }
 
 Trie::~Trie() {
     delete raiz;
+    delete estrategiaActual;
 }
 
 Trie& Trie::getInstance() {
@@ -25,6 +27,13 @@ Trie& Trie::getInstance() {
         instancia = new Trie();
     }
     return *instancia;
+}
+
+void Trie::setEstrategia(EstrategiaRanking* nuevaEstrategia) {
+    if (estrategiaActual != nullptr) {
+        delete estrategiaActual;
+    }
+    estrategiaActual = nuevaEstrategia;
 }
 
 // Nodotrie
@@ -61,7 +70,7 @@ void Trie::insertar(const string& palabra, int idPelicula) {
 }
 
 // Busquedas (integrante 1)
-vector<Resultado> Trie::buscarPalabra(const string& consulta) {
+vector<Resultado> Trie::buscarPalabra(const string& consulta, const vector<Pelicula>& baseDatos, const vector<int>& listaLikes) {
     string limpio = normalizar(consulta);
     NodoTrie* actual = raiz;
     for (char c : limpio) {
@@ -74,26 +83,17 @@ vector<Resultado> Trie::buscarPalabra(const string& consulta) {
     unordered_map<int, int> consolidado;
     recolectarResultados(actual, consolidado);
 
-    priority_queue<Resultado> pq;
-    for (auto const& [id, frec] : consolidado) {
-        pq.push({id, frec});
-    }
-
-    vector<Resultado> lista;
-    while (!pq.empty()) {
-        lista.push_back(pq.top());
-        pq.pop();
-    }
-    return lista;
+    // DELEGACIÓN AL PATRÓN STRATEGY
+    return estrategiaActual->rankear(consolidado, baseDatos, listaLikes);
 }
 
-vector<Resultado> Trie::buscar(string consulta) {
+vector<Resultado> Trie::buscar(string consulta, const vector<Pelicula>& baseDatos, const vector<int>& listaLikes) {
     string limpio = normalizar(consulta);
     vector<string> palabras = tokenizar(limpio);
     if (palabras.empty()) return {};
     if (palabras.size() == 1)
-        return buscarPalabra(palabras[0]);
-    return buscarFrase(palabras);
+        return buscarPalabra(palabras[0], baseDatos, listaLikes);
+    return buscarFrase(palabras, baseDatos, listaLikes);
 }
 
 void Trie::recolectarResultados(NodoTrie *nodo, unordered_map<int, int> &resultadosAcumulados) {
@@ -108,24 +108,34 @@ void Trie::recolectarResultados(NodoTrie *nodo, unordered_map<int, int> &resulta
     }
 }
 
-vector<Resultado> Trie::buscarFrase(const vector<string>& palabras) {
-    unordered_map<int,int> consolidado;
-    for(const string& palabra : palabras) {
-        vector<Resultado> resultados = buscarPalabra(palabra);
-        for(const auto& r : resultados) {
-            consolidado[r.idPelicula] += r.relevancia;
+vector<Resultado> Trie::buscarFrase(const vector<string>& palabras, const vector<Pelicula>& baseDatos, const vector<int>& listaLikes) {
+    unordered_map<int, int> consolidado;
+
+    for (const string& palabra : palabras) {
+        string limpio = normalizar(palabra);
+        NodoTrie* actual = raiz;
+        bool encontrada = true;
+
+        for (char c : limpio) {
+            int indice = obtenerIndice(c);
+            if (indice == -1) continue;
+            if (actual->hijos[indice] == nullptr) {
+                encontrada = false;
+                break;
+            }
+            actual = actual->hijos[indice];
+        }
+
+        if (encontrada) {
+            unordered_map<int, int> temp;
+            recolectarResultados(actual, temp);
+            for (const auto& [id, frec] : temp) {
+                consolidado[id] += frec;
+            }
         }
     }
-    priority_queue<Resultado> pq;
-    for(const auto& [id,frec] : consolidado) {
-        pq.push({id,frec});
-    }
-    vector<Resultado> lista;
-    while(!pq.empty()) {
-        lista.push_back(pq.top());
-        pq.pop();
-    }
-    return lista;
+
+    return estrategiaActual->rankear(consolidado, baseDatos, listaLikes);
 }
 
 // Construccion paralela
