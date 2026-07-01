@@ -6,50 +6,47 @@
 #include <map>
 #include <unordered_map>
 #include <queue>
-
+#include <mutex>
+#include <thread>
+#include <chrono>
+#include "resultado.h"
 #include "pelicula.h"
+#include "preprocesador.h"
 
 using namespace std;
 
-//Estructura para el manejo de ranking de los resultados
-// [TESTEO P3: No finalizado aun]
-struct Resultado {
-    int idPelicula;
-    int relevancia;
-
-    //Sobrecarga de operador que la priority_queue ordene de mayor a menor
-    bool operator<(const Resultado& otro) const {
-        return relevancia < otro.relevancia;
-    }
-};
-
-// [TESTEO P2: No finalizado aun]
 struct NodoTrie {
-    NodoTrie* hijos[36]; // 26 letras + 10 números
+    NodoTrie* hijos[36];
     bool esFin;
-    // Mapa: <idPelicula, frecuencia de la palabra en esa peli>
     map<int, int> contadorPeliculas;
-
     NodoTrie();
+    ~NodoTrie();
 };
 
-// [TESTEO P2: No finalizado aun]
 class Trie {
 private:
+    static Trie* instancia;
+    static std::mutex mutexInstancia;
+    
     NodoTrie* raiz;
+    
+    Trie();                    
     int obtenerIndice(char c);
-
+    void insertar(const string& palabra, int idPelicula);
     void recolectarResultados(NodoTrie* nodo, unordered_map<int, int>& resultadosAcumulados);
 
 public:
-    Trie();
-    void insertar(const string& palabra, int idPelicula);
+    ~Trie();
+    static Trie& getInstance();
+    
     void construirTrie(const vector<Pelicula>& peliculas);
-    NodoTrie* getRaiz() {
-        return raiz;
-    }
-
+    
     vector<Resultado> buscar(string consulta);
+    vector<Resultado> buscarPalabra(const string& consulta);
+    vector<Resultado> buscarFrase(const vector<string>& palabras);
     vector<Resultado> obtenerPagina(const vector<Resultado>& todosLosResultados, int pagina, int tamanoPagina = 5);
+    
+    NodoTrie* getRaiz() { return raiz; }
 };
-#endif//
+
+#endif

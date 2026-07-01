@@ -13,6 +13,12 @@ using namespace std;
 
 int main() {
 
+    /* 
+    Prueba trie: 
+    Trie& trie = Trie::getInstance();
+    trie.construirTrie(peliculas);
+ */
+
     vector<Pelicula> pelis = cargarCSV("../wiki_movie_plots_deduped.csv");
     for (int i = 0; i < 4; i++) {
         string texto = pelis[i].titulo + " " + pelis[i].sinopsis;
@@ -25,9 +31,9 @@ int main() {
         cout << "\n-----------------\n";
     }
 
-    Trie miTrie;
+    Trie& trie = Trie::getInstance();
     cout << "Construyendo estructura de busqueda.... " << endl;
-    miTrie.construirTrie(pelis);
+    trie.construirTrie(pelis);
     cout << "Trie construido con exito" << endl;
 
     /*
