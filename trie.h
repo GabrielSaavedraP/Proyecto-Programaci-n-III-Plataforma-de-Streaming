@@ -6,22 +6,14 @@
 #include <map>
 #include <unordered_map>
 #include <queue>
-
+#include "resultado.h"
 #include "pelicula.h"
 
 using namespace std;
 
 //Estructura para el manejo de ranking de los resultados
 // [TESTEO P3: No finalizado aun]
-struct Resultado {
-    int idPelicula;
-    int relevancia;
 
-    //Sobrecarga de operador que la priority_queue ordene de mayor a menor
-    bool operator<(const Resultado& otro) const {
-        return relevancia < otro.relevancia;
-    }
-};
 
 // [TESTEO P2: No finalizado aun]
 struct NodoTrie {
