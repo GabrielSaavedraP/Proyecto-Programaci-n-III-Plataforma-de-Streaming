@@ -51,5 +51,8 @@ public:
 
     vector<Resultado> buscar(string consulta);
     vector<Resultado> obtenerPagina(const vector<Resultado>& todosLosResultados, int pagina, int tamanoPagina = 5);
+    vector<Resultado> buscarFrase(const vector<string>& consulta);
+    vector<Resultado> buscarPalabra(const string& consulta);
+
 };
 #endif//

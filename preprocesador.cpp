@@ -26,7 +26,7 @@ unordered_set<string> stopwords = {
     "so","than","too","very","can","will","just","should"
 };
 
-string normalizar(string texto) {
+string normalizar(const string& texto) {
     string r = "";
 
     for (int i = 0; i < texto.size(); i++) {
@@ -44,7 +44,7 @@ string normalizar(string texto) {
     return r;
 }
 
-vector<string> tokenizar(string texto) {
+vector<string> tokenizar(const string& texto) {
     vector<string> palabras;
     string actual = "";
 
