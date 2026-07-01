@@ -9,5 +9,5 @@ void agregarLike(int idPelicula);
 void cargarListas();
 void guardarListas();
 void mostrarVerMasTarde(const std::vector<Pelicula>& peliculas);
-// [TESTEO: No finalizado aún]
-#endif// [TESTEO: No finalizado aun]
+
+#endif

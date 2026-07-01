@@ -160,7 +160,7 @@ void Trie::construirTrie(const vector<Pelicula>& peliculas) {
                 for (const string& pal : palabras) {
                     if (!pal.empty()) {
                         std::lock_guard<std::mutex> lock(mutexInsert);
-                        insertar(pal, p.id);
+                        insertar(pal, j);
                     }
                 }
             }

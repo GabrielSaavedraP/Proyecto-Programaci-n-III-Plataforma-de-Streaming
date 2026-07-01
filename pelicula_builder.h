@@ -1,10 +1,3 @@
-//
-// Created by Gabriel Saavedra on 30/06/26.
-//
-
-#ifndef PROYECTO_PROGRA_3_PELICULA_BUILDER_H
-#define PROYECTO_PROGRA_3_PELICULA_BUILDER_H
-
 #ifndef PELICULA_BUILDER_H
 #define PELICULA_BUILDER_H
 
@@ -55,5 +48,3 @@ public:
 };
 
 #endif
-
-#endif //PROYECTO_PROGRA_3_ PELICULA_BUILDER_H
