@@ -393,22 +393,37 @@ int main()
                 else
                 {
                     cout<<"\n=========== RESULTADOS ===========\n";
+                    const int LIMITE = 5;
 
-                    for(size_t i=0;i<resultados.size();i++)
+                    int cantidad = min((int)resultados.size(), LIMITE);
+
+                    for(int i = 0; i < cantidad; i++)
                     {
                         int id = resultados[i].idPelicula;
 
                         cout
-                            <<i+1
-                            <<". "
-                            <<pelis[id].titulo
-                            <<" ("
-                            <<pelis[id].releaseYear
-                            <<")"
-                            <<" | "
-                            <<pelis[id].director
-                            <<endl;
+                            << i + 1
+                            << ". "
+                            << pelis[id].titulo
+                            << " ("
+                            << pelis[id].releaseYear
+                            << ")"
+                            << " | "
+                            << pelis[id].director
+                            << endl;
                     }
+
+                    if(resultados.size() > LIMITE)
+                    {
+                        cout << "\nSe encontraron "
+                             << resultados.size()
+                             << " peliculas. "
+                             << "Mostrando solo las primeras "
+                             << LIMITE
+                             << " coincidencias.\n";
+                    }
+
+
                 }
             }
 
