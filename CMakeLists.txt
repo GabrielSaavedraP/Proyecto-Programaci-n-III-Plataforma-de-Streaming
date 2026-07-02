@@ -17,4 +17,6 @@ add_executable(Proyecto_Progra_3
         trie.cpp
         Resultado.h
         estrategias.cpp
-        estrategias.h)
+        estrategias.h
+        observer.cpp
+        observer.h)
