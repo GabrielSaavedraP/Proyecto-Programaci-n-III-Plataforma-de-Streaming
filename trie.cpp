@@ -185,3 +185,13 @@ void Trie::construirTrie(const vector<Pelicula>& peliculas) {
     cout << "[Trie] Construido en " << tiempoParalelo 
          << " ms usando " << numHilos << " hilos." << endl;
 }
+
+vector<Resultado> Trie::obtenerPagina(const vector<Resultado>& resultados, int pagina, int tamanoPagina) {
+    vector<Resultado> subLista;
+    int inicio = (pagina - 1) * tamanoPagina;
+    if (inicio >= (int)resultados.size() || pagina <= 0) return {};
+    for (int i = inicio; i < inicio + tamanoPagina && i < (int)resultados.size(); i++) {
+        subLista.push_back(resultados[i]);
+    }
+    return subLista;
+}

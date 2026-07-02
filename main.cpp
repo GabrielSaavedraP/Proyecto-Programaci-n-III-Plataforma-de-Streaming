@@ -39,7 +39,7 @@ int main() {
             string consulta;
             cout << "\nIngrese palabra, frase o sub-palabra a buscar: ";
             getline(cin, consulta);
-            vector<Resultado> resultados = trie.buscar(consulta);
+            vector<Resultado> resultados = trie.buscar(consulta, pelis, listaLikes);
             if (resultados.empty()) {
                 cout << "\nNo se encontraron coincidencias para: "
                      << consulta << endl;

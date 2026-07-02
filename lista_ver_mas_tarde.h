@@ -4,10 +4,16 @@
 #include <vector>
 #include "pelicula.h"
 
+using namespace std;
+
+extern vector<int> listaVerMasTarde;
+extern vector<int> listaLikes;
+
+
 void agregarVerMasTarde(int idPelicula);
 void agregarLike(int idPelicula);
 void cargarListas();
 void guardarListas();
-void mostrarVerMasTarde(const std::vector<Pelicula>& peliculas);
+void mostrarVerMasTarde(const vector<Pelicula>& peliculas);
 
 #endif
