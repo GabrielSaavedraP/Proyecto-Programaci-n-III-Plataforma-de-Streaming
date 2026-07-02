@@ -1,8 +1,9 @@
+```markdown
 # Programación III: Plataforma de Streaming
 
 **Integrantes:**
 - Ariel Mathias Fernando Choque Marcelo
-- Marco Antonio Benito Corimanya Juarez 
+- Marco Antonio Benito Corimanya Juarez
 - Ernesto Yen Mendoza Aguilar
 - Adrian Gabriel Rojas Tejada
 - Gabriel Omar Saavedra Peralta
@@ -28,8 +29,7 @@ Cada nodo del Trie tiene:
 
 Ejemplo con las palabras "bat" y "bad":
 
-
-  ```
+```
 raiz
 └── b
     └── a
@@ -75,18 +75,16 @@ nodo actual.contadorPeliculas[idPelicula]++
 FIN del ALGORITMO
 ```
 
-
 Funcion construirTrie(peliculas): Función que itera todas las películas y las ingresa al Trie.
 ```
 ALGORITMO construirTrie(peliculas)
 PARA CADA pelicula EN peliculas CON indice i:
-contenido = pelicula.titulo + pelicula.sinopsis +
-pelicula.director + pelicula.genero + pelicula.cast
-contenido limpio = normalizar(contenido)
-palabras = tokenizar(contenido limpio)
+    contenido = pelicula.titulo + pelicula.sinopsis +
+                pelicula.director + pelicula.genero + pelicula.cast
+    contenido limpio = normalizar(contenido)
+    palabras = tokenizar(contenido limpio)
     PARA CADA palabra EN palabras:
         insertar(palabra, i)
-
 FIN del ALGORITMO
 ```
 
@@ -101,30 +99,56 @@ Se recorre el árbol nodo por nodo siguiendo los caracteres de la consulta. Si s
 Una vez alcanzado el último nodo de la consulta, se realiza un recorrido profundo sobre todo el subárbol. Esto permite encontrar películas donde el término buscado es solo el inicio de la palabra.
 
 Ejemplo:
-
-  ```
-"bar" -> "barco","barista"
+```
+"bar" -> "barco", "barista"
 ```
 
-2. *Pseudocódigo*
+2. *Búsqueda por frase*
+
+Si el usuario ingresa más de una palabra, la consulta se tokeniza y se busca cada palabra por separado en el Trie. Los resultados de cada palabra se combinan sumando sus frecuencias, de modo que las películas que contienen más palabras de la consulta aparecen primero.
+
+3. *Búsqueda por tag*
+
+El programa permite buscar películas filtrando por campo específico: director, género o cast. Para esto se construye un índice invertido usando *unordered_map*, donde la clave es el valor del tag y el valor es la lista de IDs de películas que lo contienen. La búsqueda en el índice es O(1) promedio.
+
+4. *Pseudocódigo*
 
 Funcion buscar(consulta): Algoritmo que localiza el nodo del prefijo y realiza la recolección de datos.
-  ```
+```
 ALGORITMO buscar(consulta)
-consulta limpia = normalizar(consulta)
-nodo actual = raiz
-PARA CADA caracter EN consulta limpia:
-    indice = obtenerIndice(caracter)
-    SI nodo actual.hijos[indice] ES nulo ENTONCES:
-        RETORNAR lista vacia
-    nodo actual = nodo actual.hijos[indice]
-
-resultados mapa = nuevo MapaVacio()
-recolectarResultados(nodo actual, resultados mapa)
-
-RETORNAR resultados mapa     
+    consulta limpia = normalizar(consulta)
+    palabras = tokenizar(consulta limpia)
+    SI palabras tiene 1 elemento:
+        RETORNAR buscarPalabra(palabras[0])
+    SI NO:
+        RETORNAR buscarFrase(palabras)
+FIN del ALGORITMO
 ```
 
+---
+
+## Algoritmo de Relevancia y Similitud
+
+Para determinar qué películas tienen más importancia se implementó el patrón Strategy con dos criterios intercambiables:
+
+*RankingPorFrecuencia*: ordena los resultados por la cantidad de veces que aparece el término buscado en cada película. Se usa como criterio por defecto.
+
+*RankingPorSimilitud*: combina la frecuencia del término con un puntaje de similitud basado en los Likes del usuario. Si la película candidata comparte director con una película que el usuario dio Like, suma 50 puntos. Si comparte género, suma 30 puntos. Esto hace que las recomendaciones personalizadas aparezcan primero.
+
+---
+
+## Interfaz del programa
+
+El programa al iniciar muestra la lista de Ver más tarde y las recomendaciones basadas en Likes anteriores. El menú principal ofrece:
+
+1. Buscar por palabra o frase
+2. Buscar por Director
+3. Buscar por Género
+4. Buscar por Cast
+5. Ver lista Ver más tarde
+6. Salir
+
+Al seleccionar una película se muestra el detalle completo con opciones de Like y Ver más tarde. Los datos se guardan en archivos de texto al salir del programa.
 
 ---
 
@@ -134,32 +158,36 @@ RETORNAR resultados mapa
 Se garantiza que solo existe una instancia del Trie en todo el programa. Construir el Trie es costoso porque recorre más de 34,000 películas, por lo que no tiene sentido permitir múltiples instancias.
 
 ### Strategy (Ranking)
-Permite intercambiar el criterio de ordenamiento de resultados (por frecuencia o por similitud) sin modificar el código que llama a buscar().
+Permite intercambiar el criterio de ordenamiento de resultados sin modificar el código que llama a buscar(). Se implementaron dos estrategias: RankingPorFrecuencia y RankingPorSimilitud.
 
 ### Observer (Likes)
-Al agregar un Like, se notifica automáticamente a las partes del programa interesadas en ese evento, como la lista de similares, sin llamarlas manualmente desde el mismo lugar.
+Al agregar un Like, el objeto LikeSubject notifica automáticamente a SimilaresObserver, que actualiza la lista de recomendaciones usando RankingPorSimilitud sin que el código del menú tenga que manejar esa lógica.
 
 ### Builder (Pelicula)
-Separa la construcción del objeto Pelicula en pasos reutilizables, reemplazando la asignación manual campo por campo que existía en cargador_csv.cpp.
+Separa la construcción del objeto Pelicula en pasos reutilizables mediante PeliculaBuilder, reemplazando la asignación manual campo por campo.
 
 ---
 
 ## Programación Paralela
 
-construirTrie() fue paralelizado usando std::thread, dividiendo el dataset en bloques para que varios hilos inserten simultáneamente.
+construirTrie() fue paralelizado usando std::thread, dividiendo el dataset en bloques iguales para que varios hilos inserten simultáneamente. Se usa std::mutex para evitar condiciones de carrera durante la inserción.
 
 ### Tabla comparativa de tiempos
 
-| Modo | Tiempo de construcción |
-|------|----------------------|
-| Secuencial | (pendiente datos de P2) |
-| Paralelo | (pendiente datos de P2) |
+| Modo | Tiempo de construcción | Hilos |
+|------|----------------------|-------|
+| Paralelo | 15,279 ms | 12 |
 
 ---
 
 ## Programación Genérica
 
-(pendiente implementación de P1)
+La función *tokenizar()* fue implementada como función template, permitiendo que retorne distintos tipos de contenedor según el contexto. Por defecto retorna *vector<string>*, pero puede instanciarse con cualquier contenedor que soporte *insert()*.
+
+```cpp
+template <typename Contenedor = vector<string>>
+Contenedor tokenizar(const string& texto)
+```
 
 ---
 
@@ -167,3 +195,4 @@ construirTrie() fue paralelizado usando std::thread, dividiendo el dataset en bl
 
 - Sedgewick, R., & Wayne, K. (2011). *Algorithms* (4th ed.). Addison-Wesley.
 - Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
+```
