@@ -1,4 +1,3 @@
-```markdown
 # Programación III: Plataforma de Streaming
 
 **Integrantes:**
@@ -99,6 +98,7 @@ Se recorre el árbol nodo por nodo siguiendo los caracteres de la consulta. Si s
 Una vez alcanzado el último nodo de la consulta, se realiza un recorrido profundo sobre todo el subárbol. Esto permite encontrar películas donde el término buscado es solo el inicio de la palabra.
 
 Ejemplo:
+
 ```
 "bar" -> "barco", "barista"
 ```
@@ -118,7 +118,7 @@ Funcion buscar(consulta): Algoritmo que localiza el nodo del prefijo y realiza l
 ALGORITMO buscar(consulta)
     consulta limpia = normalizar(consulta)
     palabras = tokenizar(consulta limpia)
-    SI palabras tiene 1 elemento:
+    SI palabras tiene 1 elemento ENTONCES:
         RETORNAR buscarPalabra(palabras[0])
     SI NO:
         RETORNAR buscarFrase(palabras)
@@ -133,22 +133,7 @@ Para determinar qué películas tienen más importancia se implementó el patró
 
 *RankingPorFrecuencia*: ordena los resultados por la cantidad de veces que aparece el término buscado en cada película. Se usa como criterio por defecto.
 
-*RankingPorSimilitud*: combina la frecuencia del término con un puntaje de similitud basado en los Likes del usuario. Si la película candidata comparte director con una película que el usuario dio Like, suma 50 puntos. Si comparte género, suma 30 puntos. Esto hace que las recomendaciones personalizadas aparezcan primero.
-
----
-
-## Interfaz del programa
-
-El programa al iniciar muestra la lista de Ver más tarde y las recomendaciones basadas en Likes anteriores. El menú principal ofrece:
-
-1. Buscar por palabra o frase
-2. Buscar por Director
-3. Buscar por Género
-4. Buscar por Cast
-5. Ver lista Ver más tarde
-6. Salir
-
-Al seleccionar una película se muestra el detalle completo con opciones de Like y Ver más tarde. Los datos se guardan en archivos de texto al salir del programa.
+*RankingPorSimilitud*: combina la frecuencia del término con un puntaje de similitud basado en los Likes del usuario. Si la película candidata comparte director con una película que el usuario dio Like, suma 50 puntos. Si comparte género, suma 30 puntos.
 
 ---
 
@@ -161,7 +146,7 @@ Se garantiza que solo existe una instancia del Trie en todo el programa. Constru
 Permite intercambiar el criterio de ordenamiento de resultados sin modificar el código que llama a buscar(). Se implementaron dos estrategias: RankingPorFrecuencia y RankingPorSimilitud.
 
 ### Observer (Likes)
-Al agregar un Like, el objeto LikeSubject notifica automáticamente a SimilaresObserver, que actualiza la lista de recomendaciones usando RankingPorSimilitud sin que el código del menú tenga que manejar esa lógica.
+Al agregar un Like, LikeSubject notifica automáticamente a SimilaresObserver, que actualiza la lista de recomendaciones usando RankingPorSimilitud. El menú muestra las recomendaciones inmediatamente después de cada Like sin lógica adicional en main.cpp.
 
 ### Builder (Pelicula)
 Separa la construcción del objeto Pelicula en pasos reutilizables mediante PeliculaBuilder, reemplazando la asignación manual campo por campo.
@@ -193,6 +178,6 @@ Contenedor tokenizar(const string& texto)
 
 ## Referencias
 
+- Kaggle. (2017). *Wikipedia Movie Plots*. https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots
 - Sedgewick, R., & Wayne, K. (2011). *Algorithms* (4th ed.). Addison-Wesley.
 - Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
-```
